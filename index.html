@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle of Grids</title>
+<style>
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 4px;
+}
+
+.cell {
+    background-color: #212121;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cell:hover {
+    background-color: #424242;
+}
+
+#winner-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #212121;
+    padding: 20px;
+    border-radius: 8px;
+    display: none;
+    z-index: 999;
+}
+
+#winner-modal h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+#winner-modal button {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="board"></div>
+</div>
+
+<div id="winner-modal">
+    <h2 id="winner-message"></h2>
+    <button id="play-again-btn">Play Again</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const board = document.querySelector('.board');
+    const cells = Array.from({ length: 9 }, (_, index) => {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = index;
+        return cell;
+    });
+
+    cells.forEach(cell => {
+        board.appendChild(cell);
+    });
+
+    let currentPlayer = 'X';
+    const winningCombos = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
+    let winner = null;
+
+    const checkWinner = () => {
+        for (const combo of winningCombos) {
+            const [a, b, c] = combo;
+            if (cells[a].textContent && cells[a].textContent === cells[b].textContent && cells[a].textContent === cells[c].textContent) {
+                winner = cells[a].textContent;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const handleClick = (index) => {
+        if (!cells[index].textContent && !winner) {
+            cells[index].textContent = currentPlayer;
+            if (checkWinner()) {
+                showWinnerModal();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            }
+        }
+    };
+
+    const showWinnerModal = () => {
+        const winnerModal = document.getElementById('winner-modal');
+        const winnerMessage = document.getElementById('winner-message');
+        winnerMessage.textContent = `${winner} wins!`;
+        winnerModal.style.display = 'block';
+    };
+
+    const resetGame = () => {
+        cells.forEach(cell => {
+            cell.textContent = '';
+        });
+        winner = null;
+        currentPlayer = 'X';
+        document.getElementById('winner-modal').style.display = 'none';
+    };
+
+    cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const index = parseInt(cell.dataset.index);
+            handleClick(index);
+        });
+    });
+
+    document.getElementById('play-again-btn').addEventListener('click', resetGame);
+});
+</script>
+
+</body>
+</html>
